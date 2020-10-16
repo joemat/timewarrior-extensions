@@ -1,5 +1,6 @@
 # timwarrior-extensions
 
+* Extensions for [timewarrior](https://github.com/GothenburgBitFactory/timewarrior)
 * [flextime extension](flextime/README.md)
 
 ## Cheat sheet
