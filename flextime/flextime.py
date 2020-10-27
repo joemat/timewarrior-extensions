@@ -33,6 +33,7 @@ import sys
 from dateutil import tz
 
 FLEXTIME_MARKER_TAG = "flextime"
+BREAK_MARKER_TAG = "break"
 VACATION_MARKER_TAG = "vacation"
 DEFAULT_WORKING_HOURS_PER_DAY = 8
 DEFAULT_VACATION_DAYS_PER_YEAR = 20
@@ -84,8 +85,8 @@ def calc_days(body):
 
         day = start.strftime("%Y-%m-%d")
 
-        if has_tag(object, FLEXTIME_MARKER_TAG):
-            # add flextime with 0 tracked time => expected is counted, no working time added
+        if has_tag(object, FLEXTIME_MARKER_TAG) or has_tag(object, BREAK_MARKER_TAG):
+            # add flextime and breaks with 0 tracked time => expected is counted as working day, no working time added
             tracked = datetime.timedelta(seconds=0)
 
         if (has_tag(object, VACATION_MARKER_TAG)):
