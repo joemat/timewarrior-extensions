@@ -57,7 +57,7 @@ def format_seconds(seconds):
     hours = seconds // 3600
     minutes = seconds % 3600 // 60
     seconds = seconds % 60
-    return "{:4d}:{:02d}:{:02d}".format(hour_factor * hours, minutes, seconds)
+    return "{:4.0f}:{:02.0f}:{:02.0f}".format(hour_factor * hours, minutes, seconds)
 
 
 def has_tag(object, wantedTag):
@@ -165,7 +165,7 @@ def calcFlexTime(input_stream):
 
     configuration, body = read_input(input_stream)
 
-    working_hours_per_day = int(from_config_or_default(configuration, "flextime.hours_per_day", DEFAULT_WORKING_HOURS_PER_DAY))
+    working_hours_per_day = float(from_config_or_default(configuration, "flextime.hours_per_day", DEFAULT_WORKING_HOURS_PER_DAY))
     working_secs_per_day = working_hours_per_day * 60 * 60
 
     vacation_total = int(from_config_or_default(configuration, "flextime.vacation_days_per_year", DEFAULT_VACATION_DAYS_PER_YEAR))
