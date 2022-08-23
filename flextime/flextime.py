@@ -69,9 +69,10 @@ def has_tag(object, wantedTag):
                 return True
     return False
 
-def calc_days(body):
+def calc_days(body, working_hours_per_day):
     totals = dict()
-    vaccation = 0;
+    vacation = 0;
+    vacation_acc = datetime.timedelta();
     j = json.loads(body)
     for object in j:
         start = datetime.datetime.strptime(object["start"], DATEFORMAT)
@@ -90,10 +91,13 @@ def calc_days(body):
             tracked = datetime.timedelta(seconds=0)
 
         if (has_tag(object, VACATION_MARKER_TAG)):
-            # for vaccation don't add an entry in the totals array, only increase vaccation count
-            # THIS WORKS ONLY FOR COMPLETE DAYS OF VACCATION!!!
-            # TODO make this work for 1/2 days
-            vaccation += 1
+            # for vacation don't add an entry in the totals array, only increase vacation count,
+            # works by accumulating tracked time until reaching a breakpoint of one complete working
+            # day, at which point the vacation count is incremented
+            vacation_acc += tracked
+            if vacation_acc >= datetime.timedelta(hours=working_hours_per_day):
+                vacation += 1
+                vacation_acc = datetime.timedelta()
             continue;
 
         if day in totals:
@@ -102,7 +106,7 @@ def calc_days(body):
             totals[day] = tracked
 
 
-    return totals, vaccation
+    return totals, vacation
 
 def get_header(start, end):
     return [
@@ -174,7 +178,7 @@ def calcFlexTime(input_stream):
     flextime_baseline = int(flextime_start_hours * 60 * 60)
 
     # Sum the seconds tracked by day.
-    totals, vaccation = calc_days(body)
+    totals, vacation = calc_days(body, working_hours_per_day)
 
     date_width = 10 # length of day string
  
@@ -223,8 +227,8 @@ def calcFlexTime(input_stream):
     output.append("Vacation:")
     underline(output,color_config)
     output.append("{:{width}} {:10} ".format("Total (this year)", vacation_total, width=20))
-    output.append("{:{width}} {:10} ".format("Taken in period", vaccation, width=20))
-    output.append("{:{width}} {:10}*".format("Left*", vacation_total - vaccation, width=20))
+    output.append("{:{width}} {:10} ".format("Taken in period", vacation, width=20))
+    output.append("{:{width}} {:10}*".format("Left*", vacation_total - vacation, width=20))
     output.append("")
     output.append("*Left also includes vacation taken in periods that are not shown in this report.")
     
