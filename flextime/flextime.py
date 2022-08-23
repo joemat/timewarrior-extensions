@@ -69,9 +69,10 @@ def has_tag(object, wantedTag):
                 return True
     return False
 
-def calc_days(body):
+def calc_days(body, working_hours_per_day):
     totals = dict()
     vaccation = 0;
+    vaccation_acc = datetime.timedelta();
     j = json.loads(body)
     for object in j:
         start = datetime.datetime.strptime(object["start"], DATEFORMAT)
@@ -90,10 +91,13 @@ def calc_days(body):
             tracked = datetime.timedelta(seconds=0)
 
         if (has_tag(object, VACATION_MARKER_TAG)):
-            # for vaccation don't add an entry in the totals array, only increase vaccation count
-            # THIS WORKS ONLY FOR COMPLETE DAYS OF VACCATION!!!
-            # TODO make this work for 1/2 days
-            vaccation += 1
+            # for vaccation don't add an entry in the totals array, only increase vaccation count,
+            # works by accumulating tracked time until reaching a breakpoint of one complete working
+            # day, at which point the vaccation count is incremented
+            vaccation_acc += tracked
+            if vaccation_acc >= datetime.timedelta(hours=working_hours_per_day):
+                vaccation += 1
+                vaccation_acc = datetime.timedelta()
             continue;
 
         if day in totals:
@@ -174,7 +178,7 @@ def calcFlexTime(input_stream):
     flextime_baseline = int(flextime_start_hours * 60 * 60)
 
     # Sum the seconds tracked by day.
-    totals, vaccation = calc_days(body)
+    totals, vaccation = calc_days(body, working_hours_per_day)
 
     date_width = 10 # length of day string
  
